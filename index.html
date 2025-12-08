@@ -157,6 +157,14 @@
       box-shadow: 0 10px 24px rgba(239,68,68,0.35);
     }
     .muted { color: var(--muted); }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+    .shake { animation: shake 0.28s ease; }
     .metrics {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -335,6 +343,7 @@
 
     function setSubmitState(state, label) {
       submitEl.classList.remove("success", "error");
+      submitEl.classList.remove("shake");
       if (state === "success") {
         submitEl.classList.add("success");
         submitEl.textContent = label || "✓ Correct";
@@ -343,6 +352,8 @@
       if (state === "error") {
         submitEl.classList.add("error");
         submitEl.textContent = label || "✕ Wrong";
+        void submitEl.offsetWidth;
+        submitEl.classList.add("shake");
         return;
       }
       submitEl.textContent = "Enter";
@@ -416,6 +427,10 @@
       e.preventDefault();
       submitAnswer();
       answerEl.focus({ preventScroll: true });
+    });
+
+    submitEl.addEventListener("animationend", () => {
+      submitEl.classList.remove("shake");
     });
 
     buildOpButtons();
