@@ -157,6 +157,22 @@
       box-shadow: 0 10px 24px rgba(239,68,68,0.35);
     }
     .muted { color: var(--muted); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .metric {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
     @media (max-width: 820px) {
       .card { padding: 16px; gap: 14px; }
       .answer-row { flex-direction: column; align-items: stretch; }
@@ -194,6 +210,16 @@
           <input id="answer" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
           <button class="submit-btn" id="submit">Enter</button>
         </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="prompt-label">Current time</div>
+            <div class="metric-value" id="current-time">0.00s</div>
+          </div>
+          <div class="metric">
+            <div class="prompt-label">Session avg</div>
+            <div class="metric-value" id="average-time">--</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -211,11 +237,59 @@
     const answerEl = document.getElementById("answer");
     const submitEl = document.getElementById("submit");
     const countSelectEl = document.getElementById("count-select");
+    const currentTimeEl = document.getElementById("current-time");
+    const averageTimeEl = document.getElementById("average-time");
 
     let selectedOp = "add";
     let selectedCount = Number(countSelectEl.value) || 2;
     let currentProblem = null;
     let lock = false;
+    let problemStartTs = null;
+    let rafId = null;
+    const durations = [];
+
+    function formatSeconds(sec) {
+      return `${Math.round(sec)}s`;
+    }
+
+    function updateAverage() {
+      if (!durations.length) {
+        averageTimeEl.textContent = "--";
+        return;
+      }
+      const sum = durations.reduce((a, b) => a + b, 0);
+      averageTimeEl.textContent = formatSeconds(sum / durations.length);
+    }
+
+    function startTimer() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      problemStartTs = performance.now();
+      currentTimeEl.textContent = formatSeconds(0);
+
+      const tick = () => {
+        if (!problemStartTs || lock) return;
+        const elapsed = (performance.now() - problemStartTs) / 1000;
+        currentTimeEl.textContent = formatSeconds(elapsed);
+        rafId = requestAnimationFrame(tick);
+      };
+
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function stopTimer() {
+      if (!problemStartTs) return null;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      const durationSec = (performance.now() - problemStartTs) / 1000;
+      problemStartTs = null;
+      currentTimeEl.textContent = formatSeconds(durationSec);
+      return durationSec;
+    }
 
     function randomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -281,6 +355,7 @@
       answerEl.value = "";
       answerEl.focus();
       setSubmitState();
+      startTimer();
     }
 
     function submitAnswer() {
@@ -292,6 +367,11 @@
         return;
       }
       if (Math.abs(guess - target) < 1e-9) {
+        const durationSec = stopTimer();
+        if (durationSec !== null) {
+          durations.push(durationSec);
+          updateAverage();
+        }
         setSubmitState("success");
         lock = true;
         setTimeout(nextProblem, 1000);
@@ -332,9 +412,14 @@
         setSubmitState();
       }
     });
-    submitEl.addEventListener("click", submitAnswer);
+    submitEl.addEventListener("click", (e) => {
+      e.preventDefault();
+      submitAnswer();
+      answerEl.focus({ preventScroll: true });
+    });
 
     buildOpButtons();
+    updateAverage();
     nextProblem();
   </script>
 </body>
