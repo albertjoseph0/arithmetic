@@ -15,11 +15,13 @@
       --success: #22c55e;
       --error: #ef4444;
     }
+    html { -webkit-text-size-adjust: 100%; }
     * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
     button, input { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -188,6 +190,16 @@
       .answer-row { flex-direction: column; align-items: stretch; }
       .submit-btn { width: 100%; }
     }
+    @media (max-width: 720px) {
+      body { justify-content: flex-start; align-items: stretch; }
+      .card { width: 100%; margin: 0 auto; }
+    }
+    @media (max-width: 480px) {
+      .card { padding: 14px; gap: 12px; border-radius: 14px; }
+      .problem { font-size: clamp(24px, 6vw, 30px); }
+      .key { min-height: 56px; font-size: 19px; }
+      .submit-btn { width: 100%; font-size: 17px; padding: 14px 16px; }
+    }
   </style>
 </head>
 <body>
@@ -203,7 +215,7 @@
         <div class="problem" id="problem"></div>
         <div class="prompt-label">Your Answer</div>
         <div class="answer-row">
-          <input id="answer" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+          <input id="answer" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
           <button class="submit-btn" id="submit">Enter</button>
         </div>
         <div class="feedback" id="feedback"></div>
