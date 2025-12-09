@@ -14,6 +14,7 @@
       --muted: #9ca3af;
       --success: #22c55e;
       --error: #ef4444;
+      --warning: #f59e0b;
     }
     html { -webkit-text-size-adjust: 100%; }
     * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
@@ -53,11 +54,34 @@
     .topbar {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
     }
-    .count-select {
+    .mode-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 120ms ease;
+    }
+    .mode-tab:hover { color: var(--text); }
+    .mode-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .count-select, .difficulty-select {
       appearance: none;
       -webkit-appearance: none;
       border: 1px solid rgba(255,255,255,0.08);
@@ -70,7 +94,7 @@
       cursor: pointer;
       min-width: 120px;
     }
-    .count-select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .count-select:focus, .difficulty-select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     .ops {
       display: grid;
       grid-auto-flow: column;
@@ -94,6 +118,26 @@
       border-color: rgba(255,255,255,0.18);
       color: #f8fafc;
       box-shadow: 0 8px 28px rgba(37,99,235,0.35);
+    }
+    .toggle-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .toggle-label input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
     .body { display: grid; grid-template-columns: 1fr; gap: 14px; }
     .panel {
@@ -156,6 +200,20 @@
       background: var(--error);
       box-shadow: 0 10px 24px rgba(239,68,68,0.35);
     }
+    .start-test-btn {
+      background: var(--success);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 120ms ease;
+      margin: 20px auto;
+      display: block;
+    }
+    .start-test-btn:hover { background: #16a34a; transform: scale(1.02); }
     .muted { color: var(--muted); }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
@@ -167,7 +225,7 @@
     .shake { animation: shake 0.28s ease; }
     .metrics {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 10px;
     }
     .metric {
@@ -181,6 +239,126 @@
       font-weight: 700;
       color: #f8fafc;
     }
+    .metric-value.warning { color: var(--warning); }
+    .metric-value.error { color: var(--error); }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 150ms ease;
+      border-radius: 4px;
+    }
+    .test-info {
+      text-align: center;
+      padding: 20px;
+    }
+    .test-info h2 {
+      margin: 0 0 12px;
+      font-size: 24px;
+      color: #f8fafc;
+    }
+    .test-info p {
+      margin: 8px 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .test-info ul {
+      text-align: left;
+      max-width: 320px;
+      margin: 16px auto;
+      padding-left: 20px;
+    }
+    .test-info li {
+      margin: 6px 0;
+      color: var(--text);
+    }
+    .hidden { display: none !important; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .modal h2 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .modal .result-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      margin: 16px 0;
+    }
+    .modal .result-badge.pass {
+      background: rgba(34,197,94,0.2);
+      color: var(--success);
+    }
+    .modal .result-badge.fail {
+      background: rgba(239,68,68,0.2);
+      color: var(--error);
+    }
+    .modal .score-display {
+      font-size: 56px;
+      font-weight: 800;
+      color: #f8fafc;
+      margin: 16px 0;
+    }
+    .modal .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .modal .stat {
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 12px 8px;
+    }
+    .modal .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .modal .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .modal .close-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .modal .close-btn:hover { background: var(--accent-strong); }
     @media (max-width: 820px) {
       .card { padding: 16px; gap: 14px; }
       .answer-row { flex-direction: column; align-items: stretch; }
@@ -193,8 +371,22 @@
     }
     @media (max-width: 480px) {
       .card { padding: 14px; gap: 12px; border-radius: 14px; }
+      .topbar { flex-direction: column; align-items: stretch; gap: 10px; }
+      .topbar h1 { text-align: center; font-size: 20px; }
+      .mode-tabs { justify-content: center; }
       .problem { font-size: clamp(24px, 6vw, 30px); }
       .submit-btn { width: 100%; font-size: 17px; padding: 14px 16px; }
+      .ops { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); }
+      .toggle-row { justify-content: center; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      #test-metrics { grid-template-columns: repeat(3, 1fr); }
+      #test-metrics .metric:nth-child(4),
+      #test-metrics .metric:nth-child(5) { grid-column: span 1; }
+      .test-info { padding: 10px; }
+      .test-info h2 { font-size: 20px; }
+      .test-info ul { padding-left: 16px; font-size: 14px; }
+      .modal { padding: 24px 16px; }
+      .modal .score-display { font-size: 48px; }
     }
   </style>
 </head>
@@ -202,15 +394,46 @@
   <div class="card">
     <div class="topbar">
       <h1>Arithmetic Practice</h1>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="practice">Practice</button>
+        <button class="mode-tab" data-mode="test">Test (80 in 8)</button>
+      </div>
+    </div>
+
+    <div id="practice-controls" class="toggle-row">
       <select id="count-select" class="count-select" aria-label="Number of values">
         <option value="2" selected>2 numbers</option>
         <option value="3">3 numbers</option>
       </select>
       <div class="ops" id="operation-buttons"></div>
+      <label class="toggle-label">
+        <input type="checkbox" id="decimals-toggle" />
+        Include decimals
+      </label>
     </div>
 
     <div class="body">
-      <div class="panel">
+      <div id="test-intro" class="panel hidden">
+        <div class="test-info">
+          <h2>Trading Firm Math Test</h2>
+          <p>Simulate the 80-in-8 test used by Optiver, Akuna Capital, Flow Traders, and other firms.</p>
+          <ul>
+            <li><strong>80 questions</strong> in <strong>8 minutes</strong></li>
+            <li>+1 point for correct, -1 for incorrect</li>
+            <li>Pass threshold: <strong>56 points (70%)</strong></li>
+            <li>Mixed operations with progressive difficulty</li>
+            <li>Integers and decimals included</li>
+          </ul>
+          <button class="start-test-btn" id="start-test">Start Test</button>
+        </div>
+      </div>
+
+      <div id="problem-panel" class="panel">
+        <div id="test-progress" class="hidden">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+        </div>
         <div class="prompt-label">Problem</div>
         <div class="problem" id="problem"></div>
         <div class="prompt-label">Your Answer</div>
@@ -218,26 +441,72 @@
           <input id="answer" type="text" inputmode="decimal" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="go" />
           <button class="submit-btn" id="submit">Enter</button>
         </div>
-        <div class="metrics">
+        <div class="metrics" id="practice-metrics">
           <div class="metric">
             <div class="prompt-label">Current time</div>
-            <div class="metric-value" id="current-time">0.00s</div>
+            <div class="metric-value" id="current-time">0s</div>
           </div>
           <div class="metric">
             <div class="prompt-label">Session avg</div>
             <div class="metric-value" id="average-time">--</div>
           </div>
         </div>
+        <div class="metrics hidden" id="test-metrics">
+          <div class="metric">
+            <div class="prompt-label">Time left</div>
+            <div class="metric-value" id="time-left">8:00</div>
+          </div>
+          <div class="metric">
+            <div class="prompt-label">Question</div>
+            <div class="metric-value" id="question-num">1/80</div>
+          </div>
+          <div class="metric">
+            <div class="prompt-label">Score</div>
+            <div class="metric-value" id="test-score">0</div>
+          </div>
+          <div class="metric">
+            <div class="prompt-label">Correct</div>
+            <div class="metric-value" id="correct-count">0</div>
+          </div>
+          <div class="metric">
+            <div class="prompt-label">Wrong</div>
+            <div class="metric-value" id="wrong-count">0</div>
+          </div>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <div id="results-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Test Complete!</h2>
+      <div class="result-badge" id="result-badge">PASS</div>
+      <div class="score-display" id="final-score">0</div>
+      <div class="prompt-label">points</div>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-value" id="final-correct">0</div>
+          <div class="stat-label">Correct</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="final-wrong">0</div>
+          <div class="stat-label">Wrong</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="final-accuracy">0%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+      <button class="close-btn" id="close-modal">Try Again</button>
     </div>
   </div>
 
   <script>
     const operations = {
-      add: { label: "Add", symbol: "+" },
-      sub: { label: "Subtract", symbol: "−" },
-      mul: { label: "Multiply", symbol: "×" },
-      div: { label: "Divide", symbol: "÷" },
+      add: { label: "+", symbol: "+" },
+      sub: { label: "−", symbol: "−" },
+      mul: { label: "×", symbol: "×" },
+      div: { label: "÷", symbol: "÷" },
     };
 
     const opButtonsEl = document.getElementById("operation-buttons");
@@ -247,17 +516,61 @@
     const countSelectEl = document.getElementById("count-select");
     const currentTimeEl = document.getElementById("current-time");
     const averageTimeEl = document.getElementById("average-time");
+    const decimalsToggle = document.getElementById("decimals-toggle");
+    const practiceControls = document.getElementById("practice-controls");
+    const testIntro = document.getElementById("test-intro");
+    const problemPanel = document.getElementById("problem-panel");
+    const testProgress = document.getElementById("test-progress");
+    const progressFill = document.getElementById("progress-fill");
+    const practiceMetrics = document.getElementById("practice-metrics");
+    const testMetrics = document.getElementById("test-metrics");
+    const timeLeftEl = document.getElementById("time-left");
+    const questionNumEl = document.getElementById("question-num");
+    const testScoreEl = document.getElementById("test-score");
+    const correctCountEl = document.getElementById("correct-count");
+    const wrongCountEl = document.getElementById("wrong-count");
+    const resultsModal = document.getElementById("results-modal");
+    const resultBadge = document.getElementById("result-badge");
+    const finalScoreEl = document.getElementById("final-score");
+    const finalCorrectEl = document.getElementById("final-correct");
+    const finalWrongEl = document.getElementById("final-wrong");
+    const finalAccuracyEl = document.getElementById("final-accuracy");
+    const closeModalBtn = document.getElementById("close-modal");
+    const startTestBtn = document.getElementById("start-test");
+    const modeTabs = document.querySelectorAll(".mode-tab");
 
+    const TEST_QUESTIONS = 80;
+    const TEST_TIME = 8 * 60;
+    const PASS_THRESHOLD = 56;
+
+    let currentMode = "practice";
     let selectedOp = "add";
     let selectedCount = Number(countSelectEl.value) || 2;
+    let includeDecimals = false;
     let currentProblem = null;
     let lock = false;
     let problemStartTs = null;
     let rafId = null;
     const durations = [];
 
+    let testState = {
+      active: false,
+      questionIndex: 0,
+      score: 0,
+      correct: 0,
+      wrong: 0,
+      startTime: null,
+      timerInterval: null
+    };
+
     function formatSeconds(sec) {
       return `${Math.round(sec)}s`;
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${m}:${s.toString().padStart(2, "0")}`;
     }
 
     function updateAverage() {
@@ -303,42 +616,101 @@
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function makeProblem(opKey) {
-      const count = selectedCount;
+    function randomDecimal(min, max, places = 2) {
+      const val = min + Math.random() * (max - min);
+      return Number(val.toFixed(places));
+    }
+
+    function getDifficultyConfig(questionIndex) {
+      const progress = questionIndex / TEST_QUESTIONS;
+      if (progress < 0.25) {
+        return { maxNum: 20, useDecimals: false, label: "easy" };
+      } else if (progress < 0.5) {
+        return { maxNum: 50, useDecimals: false, label: "medium" };
+      } else if (progress < 0.75) {
+        return { maxNum: 50, useDecimals: true, label: "medium-hard" };
+      } else {
+        return { maxNum: 99, useDecimals: true, label: "hard" };
+      }
+    }
+
+    function makeProblem(opKey, forTest = false) {
+      const count = forTest ? 2 : selectedCount;
+      let useDecimals = forTest ? false : includeDecimals;
+      let maxNum = 20;
+
+      if (forTest) {
+        const config = getDifficultyConfig(testState.questionIndex);
+        maxNum = config.maxNum;
+        useDecimals = config.useDecimals && Math.random() < 0.4;
+      }
+
       let nums = [];
+
       if (opKey === "div") {
-        const base = randomInt(1, 12);
-        const b = randomInt(2, 12);
-        if (count === 2) {
-          const a = base * b;
-          nums = [a, b];
+        if (useDecimals) {
+          const base = randomDecimal(1, 15, 1);
+          const b = randomInt(2, 12);
+          const a = Number((base * b).toFixed(2));
+          nums = count === 2 ? [a, b] : [a * randomInt(2, 5), b, randomInt(2, 5)];
         } else {
-          const c = randomInt(2, 12);
-          const a = base * b * c;
-          nums = [a, b, c];
+          const base = randomInt(1, 12);
+          const b = randomInt(2, 12);
+          if (count === 2) {
+            nums = [base * b, b];
+          } else {
+            const c = randomInt(2, 12);
+            nums = [base * b * c, b, c];
+          }
         }
       } else if (opKey === "sub") {
-        nums = Array.from({ length: count }, () => randomInt(1, 30));
+        if (useDecimals) {
+          nums = Array.from({ length: count }, () => randomDecimal(1, maxNum, 2));
+        } else {
+          nums = Array.from({ length: count }, () => randomInt(1, maxNum));
+        }
         const totalRest = nums.slice(1).reduce((a, b) => a + b, 0);
-        nums[0] = totalRest + randomInt(0, 20);
+        nums[0] = useDecimals
+          ? Number((totalRest + randomDecimal(0, 20, 2)).toFixed(2))
+          : totalRest + randomInt(0, 30);
+      } else if (opKey === "mul") {
+        if (useDecimals) {
+          nums = [randomDecimal(1, 15, 1), randomInt(2, 12)];
+          if (count === 3) nums.push(randomInt(2, 5));
+        } else {
+          const mulMax = forTest ? Math.min(maxNum, 15) : 12;
+          nums = Array.from({ length: count }, () => randomInt(2, mulMax));
+        }
       } else {
-        nums = Array.from({ length: count }, () => randomInt(1, 20));
+        if (useDecimals) {
+          nums = Array.from({ length: count }, () => randomDecimal(1, maxNum, 2));
+        } else {
+          nums = Array.from({ length: count }, () => randomInt(1, maxNum));
+        }
       }
-      return { op: opKey, nums };
+
+      return { op: opKey, nums, useDecimals };
     }
 
     function computeAnswer(problem) {
       const { op, nums } = problem;
-      if (op === "add") return nums.reduce((a, b) => a + b, 0);
-      if (op === "sub") return nums.reduce((a, b) => a - b);
-      if (op === "mul") return nums.reduce((a, b) => a * b, 1);
-      if (op === "div") return nums.reduce((a, b) => a / b);
-      return 0;
+      let result;
+      if (op === "add") result = nums.reduce((a, b) => a + b, 0);
+      else if (op === "sub") result = nums.reduce((a, b) => a - b);
+      else if (op === "mul") result = nums.reduce((a, b) => a * b, 1);
+      else if (op === "div") result = nums.reduce((a, b) => a / b);
+      else result = 0;
+      return Number(result.toFixed(4));
+    }
+
+    function formatNumber(n) {
+      if (Number.isInteger(n)) return n.toString();
+      return n.toFixed(2).replace(/\.?0+$/, "");
     }
 
     function renderProblem(problem) {
       const sym = operations[problem.op].symbol;
-      problemEl.textContent = problem.nums.join(` ${sym} `);
+      problemEl.textContent = problem.nums.map(formatNumber).join(` ${sym} `);
     }
 
     function setSubmitState(state, label) {
@@ -346,12 +718,12 @@
       submitEl.classList.remove("shake");
       if (state === "success") {
         submitEl.classList.add("success");
-        submitEl.textContent = label || "✓ Correct";
+        submitEl.textContent = label || "✓";
         return;
       }
       if (state === "error") {
         submitEl.classList.add("error");
-        submitEl.textContent = label || "✕ Wrong";
+        submitEl.textContent = label || "✕";
         void submitEl.offsetWidth;
         submitEl.classList.add("shake");
         return;
@@ -361,34 +733,174 @@
 
     function nextProblem() {
       lock = false;
-      currentProblem = makeProblem(selectedOp);
+      if (testState.active) {
+        const ops = ["add", "sub", "mul", "div"];
+        const randomOp = ops[randomInt(0, 3)];
+        currentProblem = makeProblem(randomOp, true);
+      } else {
+        currentProblem = makeProblem(selectedOp, false);
+      }
       renderProblem(currentProblem);
       answerEl.value = "";
       answerEl.focus();
       setSubmitState();
-      startTimer();
+      if (!testState.active) {
+        startTimer();
+      }
+    }
+
+    function updateTestUI() {
+      questionNumEl.textContent = `${testState.questionIndex + 1}/${TEST_QUESTIONS}`;
+      testScoreEl.textContent = testState.score;
+      correctCountEl.textContent = testState.correct;
+      wrongCountEl.textContent = testState.wrong;
+      progressFill.style.width = `${((testState.questionIndex) / TEST_QUESTIONS) * 100}%`;
+
+      if (testState.score < 0) {
+        testScoreEl.classList.add("error");
+      } else {
+        testScoreEl.classList.remove("error");
+      }
+    }
+
+    function endTest() {
+      testState.active = false;
+      if (testState.timerInterval) {
+        clearInterval(testState.timerInterval);
+        testState.timerInterval = null;
+      }
+
+      const passed = testState.score >= PASS_THRESHOLD;
+      const answered = testState.correct + testState.wrong;
+      const accuracy = answered > 0 ? Math.round((testState.correct / answered) * 100) : 0;
+
+      finalScoreEl.textContent = testState.score;
+      finalCorrectEl.textContent = testState.correct;
+      finalWrongEl.textContent = testState.wrong;
+      finalAccuracyEl.textContent = `${accuracy}%`;
+
+      resultBadge.textContent = passed ? "PASS" : "FAIL";
+      resultBadge.className = `result-badge ${passed ? "pass" : "fail"}`;
+
+      resultsModal.classList.remove("hidden");
     }
 
     function submitAnswer() {
       if (lock) return;
-      const guess = Number(answerEl.value.trim());
+      const inputVal = answerEl.value.trim();
+      const guess = Number(inputVal);
       const target = computeAnswer(currentProblem);
+
       if (!Number.isFinite(guess)) {
-        setSubmitState("error", "✕ Enter a number");
+        setSubmitState("error", "✕");
         return;
       }
-      if (Math.abs(guess - target) < 1e-9) {
-        const durationSec = stopTimer();
-        if (durationSec !== null) {
-          durations.push(durationSec);
-          updateAverage();
+
+      const tolerance = currentProblem.useDecimals ? 0.01 : 1e-9;
+      const isCorrect = Math.abs(guess - target) < tolerance;
+
+      if (testState.active) {
+        if (isCorrect) {
+          testState.score++;
+          testState.correct++;
+          setSubmitState("success");
+        } else {
+          testState.score--;
+          testState.wrong++;
+          setSubmitState("error");
         }
-        setSubmitState("success");
-        lock = true;
-        setTimeout(nextProblem, 1000);
+
+        testState.questionIndex++;
+        updateTestUI();
+
+        if (testState.questionIndex >= TEST_QUESTIONS) {
+          lock = true;
+          setTimeout(endTest, 500);
+        } else {
+          lock = true;
+          setTimeout(nextProblem, 300);
+        }
       } else {
-        setSubmitState("error");
-        answerEl.focus();
+        if (isCorrect) {
+          const durationSec = stopTimer();
+          if (durationSec !== null) {
+            durations.push(durationSec);
+            updateAverage();
+          }
+          setSubmitState("success");
+          lock = true;
+          setTimeout(nextProblem, 800);
+        } else {
+          setSubmitState("error");
+          answerEl.focus();
+        }
+      }
+    }
+
+    function startTest() {
+      testState = {
+        active: true,
+        questionIndex: 0,
+        score: 0,
+        correct: 0,
+        wrong: 0,
+        startTime: Date.now(),
+        timerInterval: null
+      };
+
+      testIntro.classList.add("hidden");
+      problemPanel.classList.remove("hidden");
+      testProgress.classList.remove("hidden");
+      practiceMetrics.classList.add("hidden");
+      testMetrics.classList.remove("hidden");
+
+      updateTestUI();
+      timeLeftEl.textContent = formatTime(TEST_TIME);
+      timeLeftEl.classList.remove("warning", "error");
+
+      testState.timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - testState.startTime) / 1000;
+        const remaining = Math.max(0, TEST_TIME - elapsed);
+        timeLeftEl.textContent = formatTime(remaining);
+
+        if (remaining <= 60) {
+          timeLeftEl.classList.add("error");
+        } else if (remaining <= 120) {
+          timeLeftEl.classList.add("warning");
+        }
+
+        if (remaining <= 0) {
+          endTest();
+        }
+      }, 200);
+
+      nextProblem();
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      modeTabs.forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.mode === mode);
+      });
+
+      if (testState.active) {
+        if (testState.timerInterval) clearInterval(testState.timerInterval);
+        testState.active = false;
+      }
+
+      if (mode === "practice") {
+        practiceControls.classList.remove("hidden");
+        testIntro.classList.add("hidden");
+        problemPanel.classList.remove("hidden");
+        testProgress.classList.add("hidden");
+        practiceMetrics.classList.remove("hidden");
+        testMetrics.classList.add("hidden");
+        nextProblem();
+      } else {
+        practiceControls.classList.add("hidden");
+        testIntro.classList.remove("hidden");
+        problemPanel.classList.add("hidden");
+        testProgress.classList.add("hidden");
       }
     }
 
@@ -396,7 +908,7 @@
       Object.entries(operations).forEach(([key, { label, symbol }]) => {
         const btn = document.createElement("button");
         btn.className = "op-btn" + (key === selectedOp ? " active" : "");
-        btn.textContent = `${label} (${symbol})`;
+        btn.textContent = label;
         btn.addEventListener("click", () => {
           selectedOp = key;
           document.querySelectorAll(".op-btn").forEach(b => b.classList.remove("active"));
@@ -407,8 +919,17 @@
       });
     }
 
+    modeTabs.forEach(tab => {
+      tab.addEventListener("click", () => setMode(tab.dataset.mode));
+    });
+
     countSelectEl.addEventListener("change", () => {
       selectedCount = Number(countSelectEl.value) || 2;
+      nextProblem();
+    });
+
+    decimalsToggle.addEventListener("change", () => {
+      includeDecimals = decimalsToggle.checked;
       nextProblem();
     });
 
@@ -418,11 +939,13 @@
         submitAnswer();
       }
     });
+
     answerEl.addEventListener("input", () => {
       if (submitEl.classList.contains("error")) {
         setSubmitState();
       }
     });
+
     submitEl.addEventListener("click", (e) => {
       e.preventDefault();
       submitAnswer();
@@ -431,6 +954,13 @@
 
     submitEl.addEventListener("animationend", () => {
       submitEl.classList.remove("shake");
+    });
+
+    startTestBtn.addEventListener("click", startTest);
+
+    closeModalBtn.addEventListener("click", () => {
+      resultsModal.classList.add("hidden");
+      setMode("test");
     });
 
     buildOpButtons();
