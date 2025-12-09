@@ -419,10 +419,10 @@
           <p>Simulate the 80-in-8 test used by Optiver, Akuna Capital, Flow Traders, and other firms.</p>
           <ul>
             <li><strong>80 questions</strong> in <strong>8 minutes</strong></li>
-            <li>+1 point for correct, -1 for incorrect</li>
+            <li>+1 correct, -1 wrong (Optiver uses -2)</li>
             <li>Pass threshold: <strong>56 points (70%)</strong></li>
-            <li>Mixed operations with progressive difficulty</li>
-            <li>Integers and decimals included</li>
+            <li>Two-digit multiplication (e.g., 23 × 47)</li>
+            <li>Progressive difficulty with decimals</li>
           </ul>
           <button class="start-test-btn" id="start-test">Start Test</button>
         </div>
@@ -623,38 +623,40 @@
 
     function getDifficultyConfig(questionIndex) {
       const progress = questionIndex / TEST_QUESTIONS;
-      if (progress < 0.25) {
-        return { maxNum: 20, useDecimals: false, label: "easy" };
-      } else if (progress < 0.5) {
-        return { maxNum: 50, useDecimals: false, label: "medium" };
-      } else if (progress < 0.75) {
-        return { maxNum: 50, useDecimals: true, label: "medium-hard" };
+      if (progress < 0.2) {
+        return { level: 1, addMax: 50, mulMax: 12, divMax: 12, useDecimals: false };
+      } else if (progress < 0.4) {
+        return { level: 2, addMax: 100, mulMax: 20, divMax: 15, useDecimals: false };
+      } else if (progress < 0.6) {
+        return { level: 3, addMax: 200, mulMax: 30, divMax: 20, useDecimals: true };
+      } else if (progress < 0.8) {
+        return { level: 4, addMax: 500, mulMax: 50, divMax: 25, useDecimals: true };
       } else {
-        return { maxNum: 99, useDecimals: true, label: "hard" };
+        return { level: 5, addMax: 999, mulMax: 99, divMax: 30, useDecimals: true };
       }
     }
 
     function makeProblem(opKey, forTest = false) {
       const count = forTest ? 2 : selectedCount;
       let useDecimals = forTest ? false : includeDecimals;
-      let maxNum = 20;
+      let config = null;
 
       if (forTest) {
-        const config = getDifficultyConfig(testState.questionIndex);
-        maxNum = config.maxNum;
-        useDecimals = config.useDecimals && Math.random() < 0.4;
+        config = getDifficultyConfig(testState.questionIndex);
+        useDecimals = config.useDecimals && Math.random() < 0.35;
       }
 
       let nums = [];
 
       if (opKey === "div") {
         if (useDecimals) {
-          const base = randomDecimal(1, 15, 1);
+          const base = randomDecimal(1, 20, 1);
           const b = randomInt(2, 12);
           const a = Number((base * b).toFixed(2));
           nums = count === 2 ? [a, b] : [a * randomInt(2, 5), b, randomInt(2, 5)];
         } else {
-          const base = randomInt(1, 12);
+          const divMax = forTest ? config.divMax : 12;
+          const base = randomInt(1, divMax);
           const b = randomInt(2, 12);
           if (count === 2) {
             nums = [base * b, b];
@@ -664,28 +666,34 @@
           }
         }
       } else if (opKey === "sub") {
+        const addMax = forTest ? config.addMax : 50;
         if (useDecimals) {
-          nums = Array.from({ length: count }, () => randomDecimal(1, maxNum, 2));
+          nums = Array.from({ length: count }, () => randomDecimal(1, Math.min(addMax, 100), 2));
         } else {
-          nums = Array.from({ length: count }, () => randomInt(1, maxNum));
+          nums = Array.from({ length: count }, () => randomInt(1, addMax));
         }
         const totalRest = nums.slice(1).reduce((a, b) => a + b, 0);
         nums[0] = useDecimals
-          ? Number((totalRest + randomDecimal(0, 20, 2)).toFixed(2))
-          : totalRest + randomInt(0, 30);
+          ? Number((totalRest + randomDecimal(1, 50, 2)).toFixed(2))
+          : totalRest + randomInt(1, Math.min(addMax, 200));
       } else if (opKey === "mul") {
         if (useDecimals) {
-          nums = [randomDecimal(1, 15, 1), randomInt(2, 12)];
+          nums = [randomDecimal(1, 20, 1), randomInt(2, 12)];
           if (count === 3) nums.push(randomInt(2, 5));
         } else {
-          const mulMax = forTest ? Math.min(maxNum, 15) : 12;
-          nums = Array.from({ length: count }, () => randomInt(2, mulMax));
+          const mulMax = forTest ? config.mulMax : 12;
+          if (forTest && config.level >= 3) {
+            nums = [randomInt(11, mulMax), randomInt(2, Math.min(mulMax, 20))];
+          } else {
+            nums = Array.from({ length: count }, () => randomInt(2, Math.min(mulMax, 15)));
+          }
         }
       } else {
+        const addMax = forTest ? config.addMax : 50;
         if (useDecimals) {
-          nums = Array.from({ length: count }, () => randomDecimal(1, maxNum, 2));
+          nums = Array.from({ length: count }, () => randomDecimal(1, Math.min(addMax, 100), 2));
         } else {
-          nums = Array.from({ length: count }, () => randomInt(1, maxNum));
+          nums = Array.from({ length: count }, () => randomInt(1, addMax));
         }
       }
 
